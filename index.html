@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Permit Search</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 50px 20px;
+        background: #eef2f7;
+        display: flex;
+        justify-content: center;
+        font-family: "Inter", Arial, sans-serif;
+      }
+
+      .wrapper {
+        width: 100%;
+        max-width: 460px;
+      }
+
+      h2 {
+        text-align: center;
+        font-size: 26px;
+        margin-bottom: 24px;
+        color: #1b2735;
+      }
+
+      .form-card {
+        background: linear-gradient(90deg, #d7d9da, #cccecf, #cccecf);
+        padding: 28px;
+        border-radius: 18px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12),
+          0 4px 10px rgba(0, 0, 0, 0.05),
+          inset 0 1px 1px rgba(255, 255, 255, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        transition: all 0.3s ease;
+      }
+
+      /* Hover effect for premium feel */
+      .form-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.16),
+          0 6px 14px rgba(0, 0, 0, 0.08);
+      }
+
+      label {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 6px;
+        display: block;
+        color: #2d3e50;
+      }
+
+      input,
+      select {
+        width: 100%;
+        height: 46px;
+        padding: 0 14px;
+        border-radius: 8px;
+        border: 1px solid #cfd6df;
+        margin-bottom: 18px;
+        font-size: 15px;
+      }
+
+      input:focus,
+      select:focus {
+        border-color: #2f81f7;
+        box-shadow: 0 0 0 3px rgba(47, 129, 247, 0.25);
+        outline: none;
+      }
+      /* ✅ Better-looking select box */
+      select {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+
+        width: 100%;
+        height: 46px;
+        padding: 0 14px;
+        border-radius: 8px;
+        border: 1px solid #cfd6df;
+        background: #fff
+          url('data:image/svg+xml;utf8,<svg fill="gray" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>')
+          no-repeat right 12px center;
+        font-size: 15px;
+        cursor: pointer;
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+
+      select:focus {
+        border-color: #2f81f7;
+        box-shadow: 0 0 0 3px rgba(47, 129, 247, 0.25);
+        outline: none;
+      }
+
+      select option {
+        padding: 12px;
+        font-size: 15px;
+        border-radius: 6px;
+      }
+
+      select option:hover {
+        background: #e7f0ff !important;
+      }
+      select option:checked {
+        background: #dbe7ff !important;
+        font-weight: 600;
+      }
+
+      select::-webkit-dropdown {
+        border-radius: 10px;
+        box-shadow: 0 6px 22px rgba(0, 0, 0, 0.12);
+      }
+
+      button {
+        width: 100%;
+        height: 48px;
+        background: #2f81f7;
+        color: white;
+        border: none;
+        border-radius: 9px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      /* ✅ Success & Error Bars */
+      .msg-bar {
+        display: none;
+        padding: 12px 16px;
+        border-radius: 6px;
+        font-size: 15px;
+        margin-bottom: 16px;
+        font-weight: 600;
+      }
+
+      .success-bar {
+        background: #d4f8d2;
+        color: #1b5e20;
+        border-left: 5px solid #43a047;
+      }
+
+      .error-bar {
+        background: #ffe1e1;
+        color: #b30000;
+        border-left: 5px solid #d32f2f;
+      }
+
+      /* ✅ Loading Spinner */
+      .spinner {
+        display: inline-flex; /* instead of flex */
+        flex-direction: row; /* ensures row layout */
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        margin-top: 25px; /* adds space from button */
+        /* width: 100%; */
+        text-align: center;
+      }
+
+      .spinner div {
+        width: 13px;
+        height: 13px;
+        background: #2f81f7;
+        border-radius: 50%;
+        animation: bounce 0.6s infinite ease-in-out;
+        display: inline-block;
+      }
+
+      .spinner div:nth-child(2) {
+        animation-delay: 0.15s;
+      }
+
+      .spinner div:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+
+      @keyframes bounce {
+        0% {
+          transform: translateY(0);
+          opacity: 0.5;
+        }
+        50% {
+          transform: translateY(-10px);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(0);
+          opacity: 0.5;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="wrapper">
+      <h2>🔍 Permit Search Filters</h2>
+
+      <!-- ✅ Message bar (success or error) -->
+      <div id="msgBar" class="msg-bar"></div>
+
+      <form id="permitForm" class="form-card">
+        <label>City / Jurisdiction</label>
+        <select name="city" required>
+          <option value="">Any</option>
+          <!-- <option value="Auburn">Auburn</option> -->
+          <option value="Bellevue">Bellevue</option>
+          <option value="Bothell">Bothell</option>
+          <option value="Burien">Burien</option>
+          <option value="Kirkland">Kirkland</option>
+          <!-- <option value="Edmonds">Edmonds</option> -->
+          <!-- <option value="Federal Way">Federal Way</option> -->
+          <!-- <option value="Issaquah">Issaquah</option> -->
+          <!-- <option value="Kenmore">Kenmore</option> -->
+          <!-- <option value="King County">King County</option> -->
+          <!-- <option value="Mercer Island">Mercer Island</option> -->
+          <!-- <option value="Mill Creek">Mill Creek</option> -->
+          <!-- <option value="Newcastle">Newcastle</option> -->
+          <!-- <option value="Sammamish">Sammamish</option> -->
+          <!-- <option value="Snoqualmie">Snoqualmie</option> -->
+          <!-- <option value="Town of Woodway">Town of Woodway</option> -->
+        </select>
+
+        <label>Start Date</label>
+        <input type="date" name="startDate" required />
+
+        <label>End Date</label>
+        <input type="date" name="endDate" required />
+
+        <!--   <label>Status</label>
+        <select name="status">
+          <option value="">Any</option>
+          <option value="Issued">Issued</option>
+          <option value="Pending">Pending</option>
+          <option value="Closed">Closed</option>
+          <option value="In Review">In Review</option>
+          <option value="Active">Active</option> 
+        </select>
+
+        <label>Permit Type</label>
+        <select name="type">
+          <option value="">Any</option>
+          <option value="TJ">TJ – ROW Franchise</option>
+          <option value="TE">TE – ROW Street Use</option>
+          <option value="TG">TG – Traffic / Transport</option>
+          <option value="TN">TN – Right of Way</option>
+        </select>
+
+        <label>Category</label>
+        <select name="category">
+          <option value="">Any</option>
+          <option>Right of Way Permits</option>
+        </select>-->
+
+        <button type="submit">Search Permits ✅</button>
+
+        <!-- ✅ Spinner -->
+        <!-- <div class="spinner" id="spinner"></div> -->
+        <div class="spinner" id="spinner" style="display: none">
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+      </form>
+    </div>
+
+    <script>
+      const form = document.getElementById("permitForm");
+      const msgBar = document.getElementById("msgBar");
+      const spinner = document.getElementById("spinner");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const start = new Date(form.startDate.value);
+        const end = new Date(form.endDate.value);
+        if (start > end) {
+          msgBar.innerText = "❌ Start date must be before end date";
+          msgBar.className = "msg-bar error-bar";
+          msgBar.style.display = "block";
+          return;
+        }
+        msgBar.style.display = "none";
+        const btn = form.querySelector("button");
+        btn.disabled = true;
+        spinner.style.display = "block";
+
+        const formData = new FormData(form);
+        const body = {};
+        formData.forEach((v, k) => (body[k] = v));
+
+        const res = await fetch("/search", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) {
+          spinner.style.display = "none";
+          btn.disabled = false;
+
+          let errorMsg = "Server error";
+
+          try {
+            const err = await res.json();
+            if (err.message) errorMsg = err.message;
+          } catch (e) {}
+
+          msgBar.innerText = "❌ " + errorMsg;
+          msgBar.className = "msg-bar error-bar";
+          msgBar.style.display = "block";
+          return;
+        }
+
+        // ✅ Read as Excel file (Blob)
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+
+        // ✅ Trigger download
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "permits.xlsx"; // ✅ Excel file
+        // a.download = "permits.csv"; // ← Correct extension
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        spinner.style.display = "none";
+        btn.disabled = false;
+
+        msgBar.innerText = "✅ Excel file downloaded!";
+        msgBar.className = "msg-bar success-bar";
+        msgBar.style.display = "block";
+
+        setTimeout(() => (msgBar.style.display = "none"), 3000);
+      });
+    </script>
+  </body>
+</html>
+
+<!-- 
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Burien CaseNumbers</title>
+  <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/light/main.css">
+  <script src="https://js.arcgis.com/4.28/"></script>
+</head>
+<body>
+<script>
+  require([
+    "esri/WebMap",
+    "esri/views/MapView",
+    "esri/layers/FeatureLayer"
+  ], function(WebMap, MapView, FeatureLayer) {
+    const webmap = new WebMap({
+      portalItem: { id: "7ab460c3268b4348b8409df54fe51bbc" }
+    });
+
+    const view = new MapView({
+      container: "viewDiv",
+      map: webmap
+    });
+
+    view.when(() => {
+      // Find the layer you need
+      const layer = webmap.layers.find(l => l.title.includes("Permit activity"));
+
+      if (layer) {
+        // Query all features
+        layer.queryFeatures({
+          where: "CaseStatus = 'CLOSED' OR CaseStatus = 'ISSUED'",
+          outFields: ["CaseNumber"],
+          returnGeometry: false
+        }).then(result => {
+          const caseNumbers = result.features.map(f => f.attributes.CaseNumber);
+          console.log("CaseNumbers:", caseNumbers);
+        });
+      }
+    });
+  });
+</script>
+<div id="viewDiv" style="width:100%; height:100vh;"></div>
+</body>
+</html> -->
