@@ -16,8 +16,15 @@ import {
   scrapeProject,
 } from "./lib/scrapePermit.js";
 import { saveBothellExcelBuffer, saveExcelBuffer } from "./lib/exportExcel.js";
+import dotenv from "dotenv";
+dotenv.config();
 
-puppeteer.use(StealthPlugin());
+const PORT = process.env.PORT || 3000;
+
+const stealth = StealthPlugin();
+stealth.enabledEvasions.delete("chrome.runtime");
+stealth.enabledEvasions.delete("iframe.contentWindow");
+puppeteer.use(stealth);
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -116,21 +123,26 @@ const filtered = burienItems.filter((item) => {
       }
 
       const limit = pLimit(3);
-      const browser = await puppeteer.launch({
-        headless: "new",
-        args: [
-          "--no-sandbox",
-          "--disable-setuid-sandbox",
-          "--disable-dev-shm-usage",
-          "--single-process",
-          "--disable-gpu",
-        ],
-      });
+    const browser = await puppeteer.launch({
+  headless: "new",                      // safer than true
+  executablePath: process.env.CHROME_PATH,
+    ignoreDefaultArgs: ['--disable-extensions'],
+  args: [
+    '--no-sandbox',
+    '--disable-setuid-sandbox',
+    '--disable-gpu',
+    '--disable-dev-shm-usage',
+    '--no-zygote',
+    '--disable-web-security',
+  ],
+});
+
       const results = [];
 
       await Promise.allSettled(
         urls.map((url, index) =>
           limit(async () => {
+            await new Promise(r => setTimeout(r, 300));
             const page = await browser.newPage();            
             const scraped = await scrapePermit(page, url);            
             await page.close();
@@ -229,20 +241,25 @@ const filtered = burienItems.filter((item) => {
         });
       }
       const limit = pLimit(3);
-      const browser = await puppeteer.launch({
-        headless: "new",
-        args: [
-          "--no-sandbox",
-          "--disable-setuid-sandbox",
-          "--disable-dev-shm-usage",
-          "--single-process",
-          "--disable-gpu",
-        ],
-      });
+    const browser = await puppeteer.launch({
+  headless: "new",                      // safer than true
+  executablePath: process.env.CHROME_PATH,
+    ignoreDefaultArgs: ['--disable-extensions'],
+  args: [
+    '--no-sandbox',
+    '--disable-setuid-sandbox',
+    '--disable-gpu',
+    '--disable-dev-shm-usage',
+    '--no-zygote',
+    '--disable-web-security',
+  ],
+});
       const results = [];
       await Promise.allSettled(
         urls.map((url, index) =>
           limit(async () => {
+            await new Promise(r => setTimeout(r, 300));
+
             const page = await browser.newPage();
             const scraped = await scrapePermit(page, url);
 
@@ -372,16 +389,20 @@ if (city && ["bothell"].includes(city.toLowerCase())) {
     );
     const limit2 = pLimit(concurrency2);
 
-    const browser2 = await puppeteer.launch({
-      headless: "new",
-      args: [
-          "--no-sandbox",
-          "--disable-setuid-sandbox",
-          "--disable-dev-shm-usage",
-          "--single-process",
-          "--disable-gpu",
-        ],
-    });
+   const browser2 = await puppeteer.launch({
+  headless: "new",                      // safer than true
+  executablePath: process.env.CHROME_PATH,
+    ignoreDefaultArgs: ['--disable-extensions'],
+  args: [
+    '--no-sandbox',
+    '--disable-setuid-sandbox',
+    '--disable-gpu',
+    '--disable-dev-shm-usage',
+    '--no-zygote',
+    '--disable-web-security',
+  ],
+});
+
     const results2 = [];
     await Promise.allSettled(
       filtered.flatMap((feature, index) => {
@@ -404,6 +425,8 @@ if (city && ["bothell"].includes(city.toLowerCase())) {
             const detailUrl =
               a.DETAIL_PAGE_URL ||
               `https://permitsearch.mybuildingpermit.com/PermitDetails/${permitNumber}/${city}`;
+              await new Promise(r => setTimeout(r, 300));
+
             const page = await browser2.newPage();
             
             let scraped = await scrapePermit(page, detailUrl);           
@@ -485,6 +508,4 @@ return res.send(buffer2);
   }
 });
 
-app.listen(3000, () =>
-  console.log("✅ Server running at http://localhost:3000")
-);
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
