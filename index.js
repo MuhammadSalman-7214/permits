@@ -117,15 +117,16 @@ const filtered = burienItems.filter((item) => {
 
       const limit = pLimit(3);
       const browser = await puppeteer.launch({
-        headless: "new",
-        args: [
-          "--no-sandbox",
-          "--disable-setuid-sandbox",
-          "--disable-dev-shm-usage",
-          "--single-process",
-          "--disable-gpu",
-        ],
-      });
+  headless: true,
+  executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
+  args: [
+    "--no-sandbox",
+    "--disable-setuid-sandbox",
+    "--disable-dev-shm-usage",
+    "--disable-gpu"
+  ]
+});
+
       const results = [];
 
       await Promise.allSettled(
@@ -231,13 +232,7 @@ const filtered = burienItems.filter((item) => {
       const limit = pLimit(3);
       const browser = await puppeteer.launch({
         headless: "new",
-        args: [
-          "--no-sandbox",
-          "--disable-setuid-sandbox",
-          "--disable-dev-shm-usage",
-          "--single-process",
-          "--disable-gpu",
-        ],
+        args: ["--no-sandbox"],
       });
       const results = [];
       await Promise.allSettled(
@@ -374,13 +369,7 @@ if (city && ["bothell"].includes(city.toLowerCase())) {
 
     const browser2 = await puppeteer.launch({
       headless: "new",
-      args: [
-          "--no-sandbox",
-          "--disable-setuid-sandbox",
-          "--disable-dev-shm-usage",
-          "--single-process",
-          "--disable-gpu",
-        ],
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
     const results2 = [];
     await Promise.allSettled(
