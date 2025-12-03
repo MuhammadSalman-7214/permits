@@ -124,8 +124,7 @@ const filtered = burienItems.filter((item) => {
 
       const limit = pLimit(3);
     const browser = await puppeteer.launch({
-  headless: "new",                      // safer than true
-  executablePath: process.env.CHROME_PATH || '/usr/bin/chromium-browser',
+  headless: true,                      // safer than true
     ignoreDefaultArgs: ['--disable-extensions'],
   args: [
     '--no-sandbox',
@@ -242,8 +241,7 @@ const filtered = burienItems.filter((item) => {
       }
       const limit = pLimit(3);
     const browser = await puppeteer.launch({
-  headless: "new",                      // safer than true
-  executablePath: process.env.CHROME_PATH || '/usr/bin/chromium-browser',
+  headless: true,                      // safer than true
     ignoreDefaultArgs: ['--disable-extensions'],
   args: [
     '--no-sandbox',
@@ -390,8 +388,7 @@ if (city && ["bothell"].includes(city.toLowerCase())) {
     const limit2 = pLimit(concurrency2);
 
    const browser2 = await puppeteer.launch({
-  headless: "new",                      // safer than true
-  executablePath: process.env.CHROME_PATH || '/usr/bin/chromium-browser',
+  headless: true,                      // safer than true
     ignoreDefaultArgs: ['--disable-extensions'],
   args: [
     '--no-sandbox',
