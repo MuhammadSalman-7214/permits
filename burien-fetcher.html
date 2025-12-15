@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Burien Fetcher</title>
+    <link
+      rel="stylesheet"
+      href="https://js.arcgis.com/4.28/esri/themes/light/main.css"
+    />
+    <script src="https://js.arcgis.com/4.28/"></script>
+  </head>
+  <body>
+    <div id="viewDiv" style="display: none"></div>
+
+    <script>
+      require(["esri/WebMap", "esri/views/MapView"], function (
+        WebMap,
+        MapView
+      ) {
+        const webmap = new WebMap({
+          portalItem: { id: "7ab460c3268b4348b8409df54fe51bbc" },
+        });
+
+        new MapView({
+          container: "viewDiv",
+          map: webmap,
+        }).when(() => {
+          const layer = webmap.layers.find((l) =>
+            l.title.includes("Permit activity")
+          );
+          if (!layer) return console.log("NO LAYER");
+
+          layer.load().then(() => {
+            layer
+              .queryFeatures({
+                where: "1=1", // sab kuch laao, filter hum server pe karenge
+                outFields: ["*"],
+                returnGeometry: false,
+                resultRecordCount: 32000,
+              })
+              .then((result) => {
+                const data = result.features.map((f) => f.attributes);
+                window.BURIEN_PERMITS = data; // <-- yeh line dekhna
+                console.log("BURIEN DATA READY:", data.length);
+              })
+              .catch((err) => console.error("QUERY ERROR:", err));
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

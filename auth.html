@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Login / Signup</title>
+
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap");
+
+      body {
+        font-family: "Inter", sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background: linear-gradient(135deg, #4b79a1, #283e51);
+      }
+
+      .card {
+        width: 360px;
+        padding: 35px 55px 35px 35px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(20px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+        text-align: center;
+        animation: fadeIn 0.6s ease-in-out;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      h2 {
+        color: #fff;
+        font-size: 26px;
+        margin: 0;
+        margin-bottom: 25px;
+        font-weight: 700;
+      }
+
+      input {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 15px;
+        font-size: 15px;
+        border-radius: 10px;
+        border: none;
+        outline: none;
+        /* transition: 0.2s; */
+        background: rgba(255, 255, 255, 0.85);
+      }
+
+      input:focus {
+        box-shadow: 0 0 0 3px rgba(47, 129, 247, 0.35);
+      }
+      .btns {
+        display: flex;
+        justify-content: space-between;
+        width: 385px;
+        gap: 5px;
+      }
+      button {
+        width: 100%;
+        padding: 12px;
+        margin-top: 10px;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 16px;
+        transition: 0.25s;
+      }
+
+      #loginBtn {
+        background: #2f81f7;
+        color: white;
+      }
+      #loginBtn:hover {
+        background: #1d6ce0;
+      }
+
+      #signupBtn {
+        background: #ffffffd0;
+        color: #2f81f7;
+        border: 2px solid #2f81f7;
+      }
+      #signupBtn:hover {
+        background: #2f81f7;
+        color: white;
+      }
+
+      .msg {
+        margin-bottom: 15px;
+        font-size: 15px;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="card">
+      <h2>🔐 Login / Signup</h2>
+
+      <div class="msg" id="msg"></div>
+
+      <input
+        type="text"
+        id="username"
+        placeholder="Enter Username/Email"
+        autocomplete="off"
+      />
+      <input
+        type="password"
+        id="password"
+        placeholder="Enter Password"
+        autocomplete="new-password"
+      />
+      <div class="btns">
+        <button id="loginBtn">Login</button>
+        <button id="signupBtn">Signup</button>
+      </div>
+    </div>
+
+    <script>
+      const msg = document.getElementById("msg");
+
+      // document
+      //   .getElementById("signupBtn")
+      //   .addEventListener("click", async () => {
+      //     const username = document.getElementById("username").value.trim();
+      //     const password = document.getElementById("password").value.trim();
+      //     if (!username || !password) {
+      //       msg.innerText = "❌ Enter both username and password";
+      //       msg.style.color = "red";
+      //       return;
+      //     }
+
+      //     const res = await fetch("/signup", {
+      //       method: "POST",
+      //       headers: { "Content-Type": "application/json" },
+      //       body: JSON.stringify({ username, password }),
+      //     });
+      //     const data = await res.json();
+      //     msg.innerText = data.message;
+      //     msg.style.color = data.success ? "lightgreen" : "red";
+
+      //     if (data.success && data.redirect) {
+      //       setTimeout(() => (window.location.href = data.redirect), 500);
+      //     }
+      //   });
+      const signupBtn = document.getElementById("signupBtn");
+
+      // Check if signup should be available
+      fetch("/check-users")
+        .then((res) => res.json())
+        .then((data) => {
+          if (!data.canSignup) {
+            signupBtn.style.display = "none"; // hide button
+            msg.innerText = "⚠ Signup disabled. Admin already exists.";
+            msg.style.color = "yellow";
+          }
+        })
+        .catch((err) => console.error("Failed to check users:", err));
+
+      signupBtn.addEventListener("click", async () => {
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value.trim();
+        if (!username || !password) {
+          msg.innerText = "❌ Enter both username and password";
+          msg.style.color = "red";
+          return;
+        }
+
+        const res = await fetch("/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password }),
+        });
+        const data = await res.json();
+        msg.innerText = data.message;
+        msg.style.color = data.success ? "lightgreen" : "red";
+
+        if (data.success && data.redirect) {
+          setTimeout(() => (window.location.href = data.redirect), 500);
+        }
+      });
+
+      document
+        .getElementById("loginBtn")
+        .addEventListener("click", async () => {
+          const username = document.getElementById("username").value.trim();
+          const password = document.getElementById("password").value.trim();
+
+          if (!username || !password) {
+            msg.innerText = "❌ Enter both username and password";
+            msg.style.color = "red";
+            return;
+          }
+
+          let res;
+          try {
+            res = await fetch("/login", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ username, password }),
+            });
+          } catch (err) {
+            msg.innerText = "❌ Network error";
+            msg.style.color = "red";
+            return;
+          }
+
+          let data;
+          try {
+            data = await res.json();
+          } catch (e) {
+            msg.innerText = "❌ Unexpected server response";
+            msg.style.color = "red";
+            return;
+          }
+
+          if (!res.ok || !data.success) {
+            msg.innerText = data.message || "Invalid credentials.";
+            msg.style.color = "red";
+            return;
+          }
+
+          msg.innerText = data.message;
+          msg.style.color = "lightgreen";
+
+          setTimeout(() => {
+            window.location.href = data.redirect || "/permit";
+          }, 300);
+        });
+    </script>
+  </body>
+</html>

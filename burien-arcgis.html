@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Refresh Burien Data</title>
+    <link
+      rel="stylesheet"
+      href="https://js.arcgis.com/4.28/esri/themes/light/main.css"
+    />
+    <script src="https://js.arcgis.com/4.28/"></script>
+    <style>
+      body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        text-align: center;
+        padding: 40px;
+        background: #f8f9fa;
+      }
+      h2 {
+        color: #1a73e8;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      #status {
+        font-size: 18px;
+        margin: 20px 0;
+        color: #555;
+      }
+      .spinner {
+        margin: 30px auto;
+        width: 50px;
+        height: 50px;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #1a73e8;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Refreshing Burien Permit Data</h2>
+      <p>Map is loading... please wait for 15-25 seconds</p>
+      <div class="spinner"></div>
+      <div id="status">Connecting to ArcGIS...</div>
+      <div
+        id="viewDiv"
+        style="
+          width: 100%;
+          height: 70vh;
+          margin-top: 20px;
+          border: 2px solid #ddd;
+          border-radius: 10px;
+        "
+      ></div>
+    </div>
+
+    <script>
+      document.getElementById("status").textContent = "Map loading...";
+
+      require(["esri/WebMap", "esri/views/MapView"], function (
+        WebMap,
+        MapView
+      ) {
+        const webmap = new WebMap({
+          portalItem: { id: "7ab460c3268b4348b8409df54fe51bbc" },
+        });
+
+        new MapView({
+          container: "viewDiv",
+          map: webmap,
+        }).when(() => {
+          document.getElementById("status").textContent =
+            "Map loaded. Querying permits...";
+
+          const layer = webmap.layers.find((l) =>
+            l.title.includes("Permit activity")
+          );
+          if (!layer) {
+            document.getElementById("status").innerHTML =
+              "<span style='color:red'>Layer not found!</span>";
+            return;
+          }
+
+          layer.load().then(() => {
+            layer
+              .queryFeatures({
+                where: "1=1",
+                outFields: ["*"],
+                returnGeometry: false,
+                resultRecordCount: 32000,
+              })
+              .then((result) => {
+                const data = result.features.map((f) => f.attributes);
+
+                document.getElementById(
+                  "status"
+                ).textContent = `Saving ${data.length} records...`;
+
+                fetch("/save-burien-json", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(data),
+                })
+                  .then(() => {
+                    // SUCCESS → current tab ko permit page pe redirect kar do
+                    window.location.href = "/permit";
+                  })
+                  .catch(() => {
+                    document.getElementById("status").innerHTML =
+                      "<span style='color:red'>Save failed! Try again.</span>";
+                  });
+              })
+              .catch((err) => {
+                document.getElementById(
+                  "status"
+                ).innerHTML = `<span style='color:red'>Query failed: ${
+                  err.message || err
+                }</span>`;
+              });
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
