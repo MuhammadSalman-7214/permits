@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Refresh Bellevue Permit Data</title>
+    <script src="https://js.arcgis.com/3.46/"></script>
+    <style>
+      body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        text-align: center;
+        padding: 40px;
+        background: #f8f9fa;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      .spinner {
+        margin: 30px auto;
+        width: 50px;
+        height: 50px;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #1a73e8;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Refreshing Bellevue Permit Data</h2>
+      <p>Map is loading... please wait ~15-25 seconds</p>
+      <div class="spinner"></div>
+      <div id="status">Connecting to ArcGIS...</div>
+      <div
+        id="viewDiv"
+        style="
+          width: 100%;
+          height: 70vh;
+          margin-top: 20px;
+          border: 2px solid #ddd;
+          border-radius: 10px;
+        "
+      ></div>
+    </div>
+
+    <script>
+      require([
+        "esri/map",
+        "esri/layers/FeatureLayer",
+        "dojo/domReady!",
+      ], function (Map, FeatureLayer) {
+        const FEATURE_LAYER_URL =
+          "https://gis-web.bellevuewa.gov/gisext/rest/services/Enterprise/Permits/MapServer/66/query";
+        // <-- Replace this with the actual Bellevue permit FeatureLayer URL
+
+        const map = new Map("viewDiv", {
+          basemap: "streets",
+          center: [-122.202, 47.61], // Bellevue coordinates
+          zoom: 12,
+        });
+
+        map.on("layers-add-result", function (event) {
+          console.log("Layers added to map:");
+          event.layers.forEach((l) => console.log(l.layer.name || l.layer.id));
+        });
+
+        const featureLayer = new FeatureLayer(FEATURE_LAYER_URL, {
+          outFields: ["*"],
+        });
+
+        map.addLayer(featureLayer);
+
+        featureLayer.on("load", function () {
+          document.getElementById("status").textContent =
+            "Layer loaded. Querying permits...";
+
+          featureLayer.queryFeatures(
+            {
+              where: "1=1",
+              outFields: ["*"],
+              returnGeometry: false,
+              maxAllowableOffset: 0,
+            },
+            function (result) {
+              const data = result.features.map((f) => f.attributes);
+              document.getElementById(
+                "status"
+              ).textContent = `Saving ${data.length} records...`;
+
+              fetch("/save-bellevue-json", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data),
+              })
+                .then(() => {
+                  document.getElementById("status").textContent =
+                    "Bellevue data saved successfully!";
+                  window.location.href = "/permit"; // redirect after saving
+                })
+                .catch(() => {
+                  document.getElementById("status").textContent =
+                    "Save failed! Try again.";
+                });
+            }
+          );
+        });
+      });
+    </script>
+  </body>
+</html>

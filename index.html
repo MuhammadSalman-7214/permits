@@ -147,7 +147,7 @@
       }
       .logout-btn {
         position: fixed;
-        top: 180px;
+        top: 340px;
         right: 0px;
         background: transparent;
         backdrop-filter: blur(12px);
@@ -247,11 +247,66 @@
     <a id="logoutBtn" class="logout-btn">Log Out</a>
     <div class="wrapper">
       <a
+        id="refreshBellevueBtn"
+        style="
+          position: fixed;
+          top: 20px;
+          right: 0px;
+          background: transparent;
+          backdrop-filter: blur(12px);
+          border-style: solid none solid solid;
+          border-width: 2px;
+          border-color: #2f81f7;
+          color: #fff;
+          border-radius: 30px 0 0 0;
+          font-size: 20px;
+          text-align: center;
+          font-weight: 600;
+          cursor: pointer;
+          box-shadow: 0 6px 26px #0000002e, 0 2px 8px #00000014;
+          transition: all 0.25s ease-in-out;
+          z-index: 100;
+          width: 300px;
+          padding: 12px 20px;
+          text-decoration: none;
+        "
+      >
+        Refresh Bellevue Data
+      </a>
+
+      <a
+        id="refreshBothellBtn"
+        style="
+          position: fixed;
+          top: 100px;
+          right: 0px;
+          background: transparent;
+          backdrop-filter: blur(12px);
+          border-style: solid none solid solid;
+          border-width: 2px;
+          border-color: #2f81f7;
+          color: #fff;
+          border-radius: 30px 0 0 0;
+          font-size: 20px;
+          text-align: center;
+          font-weight: 600;
+          cursor: pointer;
+          box-shadow: 0 6px 26px #0000002e, 0 2px 8px #00000014;
+          transition: all 0.25s ease-in-out;
+          z-index: 100;
+          width: 300px;
+          padding: 12px 20px;
+          text-decoration: none;
+        "
+      >
+        Refresh Bothell Data
+      </a>
+      <a
         href="/refresh-kirkland"
         target="_blank"
         style="
           position: fixed;
-          top: 100px;
+          top: 180px;
           right: 0px;
           background: transparent;
           backdrop-filter: blur(12px);
@@ -279,7 +334,7 @@
         target="_blank"
         style="
           position: fixed;
-          top: 20px;
+          top: 260px;
           right: 0px;
           background: transparent;
           backdrop-filter: blur(12px);
@@ -422,6 +477,82 @@
 
         if (data.success && data.redirect) {
           window.location.href = data.redirect; // redirect to login
+        }
+      });
+    </script>
+    <script>
+      const refreshBtn = document.getElementById("refreshBellevueBtn");
+      const msgBar2 = document.getElementById("msgBar");
+
+      function showInfo(message, type = "success") {
+        msgBar2.innerText = message;
+        msgBar2.className =
+          "msg-bar " + (type === "error" ? "error-bar" : "success-bar");
+        msgBar2.style.display = "block";
+        setTimeout(() => (msgBar2.style.display = "none"), 3500);
+      }
+
+      refreshBtn.addEventListener("click", async () => {
+        refreshBtn.innerText = "Fetching Bellevue Data...";
+        refreshBtn.disabled = true;
+
+        try {
+          const res = await fetch("/api/bellevue");
+          const json = await res.json();
+
+          if (!json.success || json.count === 0) {
+            showInfo("❌ No Bellevue data fetched.", "error");
+          } else {
+            showInfo(
+              `✅ Bellevue data saved in VS Code! Records: ${json.count}`
+            );
+          }
+        } catch (err) {
+          console.error(err);
+          showInfo("❌ Failed to fetch Bellevue data.", "error");
+        } finally {
+          setTimeout(() => {
+            refreshBtn.innerText = "Refresh Bellevue Data";
+            refreshBtn.disabled = false;
+          }, 2000);
+        }
+      });
+    </script>
+    <script>
+      const refreshBothellBtn = document.getElementById("refreshBothellBtn");
+      const msgBar3 = document.getElementById("msgBar");
+
+      function showInfo(message, type = "success") {
+        msgBar3.innerText = message;
+        msgBar3.className =
+          "msg-bar " + (type === "error" ? "error-bar" : "success-bar");
+        msgBar3.style.display = "block";
+        setTimeout(() => (msgBar3.style.display = "none"), 3500);
+      }
+
+      refreshBothellBtn.addEventListener("click", async () => {
+        refreshBothellBtn.innerText = "Fetching Bothell Data...";
+        refreshBothellBtn.disabled = true;
+
+        try {
+          const res = await fetch("/api/bothell");
+          const json = await res.json();
+
+          if (!json.success || json.count === 0) {
+            showInfo("❌ No Bothell data fetched.", "error");
+          } else {
+            showInfo(
+              `✅ Bothell data saved in VS Code! Records: ${json.count}`
+            );
+          }
+        } catch (err) {
+          console.error(err);
+          showInfo("❌ Failed to fetch Bothell data.", "error");
+        } finally {
+          setTimeout(() => {
+            refreshBothellBtn.innerText = "Refresh Bothell Data";
+            refreshBothellBtn.disabled = false;
+          }, 2000);
         }
       });
     </script>

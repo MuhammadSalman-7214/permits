@@ -133,34 +133,7 @@
 
     <script>
       const msg = document.getElementById("msg");
-
-      // document
-      //   .getElementById("signupBtn")
-      //   .addEventListener("click", async () => {
-      //     const username = document.getElementById("username").value.trim();
-      //     const password = document.getElementById("password").value.trim();
-      //     if (!username || !password) {
-      //       msg.innerText = "❌ Enter both username and password";
-      //       msg.style.color = "red";
-      //       return;
-      //     }
-
-      //     const res = await fetch("/signup", {
-      //       method: "POST",
-      //       headers: { "Content-Type": "application/json" },
-      //       body: JSON.stringify({ username, password }),
-      //     });
-      //     const data = await res.json();
-      //     msg.innerText = data.message;
-      //     msg.style.color = data.success ? "lightgreen" : "red";
-
-      //     if (data.success && data.redirect) {
-      //       setTimeout(() => (window.location.href = data.redirect), 500);
-      //     }
-      //   });
       const signupBtn = document.getElementById("signupBtn");
-
-      // Check if signup should be available
       fetch("/check-users")
         .then((res) => res.json())
         .then((data) => {
