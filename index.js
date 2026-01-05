@@ -156,9 +156,15 @@ app.get("/api/bellevue", async (req, res) => {
 
 app.get("/api/bothell", async (req, res) => {
   try {
-    const data = await fetchBothellBasic("bothell");
+    const data = await fetchBothellBasic("bothell", 3);
+
+    // You MUST save the data to a file so the Search route can find it later
+    const filePath = path.join(__dirname, "downloads", "BothellPermit.json");
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+
     res.json({ success: true, count: data.length });
   } catch (err) {
+    console.error("Bothell Refresh Error:", err);
     res.status(500).json({
       success: false,
       message: "We couldn't reach the Bothell database right now.",
